@@ -1,7 +1,7 @@
 services:
 
   postgres-fraud:
-    container_name: postgres
+    container_name: postgresfraud
     image: postgres
     environment:
       POSTGRES_USER: antares
@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres:/data/postgres
     ports:
-      - 5232:5432
+      - 5132:5432
     networks:
       - postgres
     restart: unless-stopped
@@ -44,6 +44,12 @@ services:
     networks:
       - postgres
     restart: unless-stopped
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - 9411:9411
 
 networks:
   postgres:
