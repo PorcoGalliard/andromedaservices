@@ -1,4 +1,4 @@
-package org.andromeda.customer;
+package org.andromeda.clients.fraud;
 
 public record FraudCheckResponse(Boolean isFraudster) {
 }
