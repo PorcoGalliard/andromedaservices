@@ -1,15 +1,19 @@
 package org.andromeda.customer;
 
 import lombok.AllArgsConstructor;
+import org.andromeda.clients.fraud.FraudCheckResponse;
+import org.andromeda.clients.fraud.FraudClient;
+import org.andromeda.clients.notifications.NotificationClient;
+import org.andromeda.clients.notifications.NotificationRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 @AllArgsConstructor
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
-    private final RestTemplate restTemplate;
+    private final FraudClient fraudClient;
+    private final NotificationClient notificationClient;
 
     public void registerCustomer(CustomerRegistrationRequest customerRegistrationRequest) {
         Customer customer = Customer.builder()
@@ -22,14 +26,17 @@ public class CustomerService {
         // TODO: check if email not taken
         customerRepository.saveAndFlush(customer);
         // TODO: check if fraudster
-        FraudCheckResponse fraudCheckResponse = restTemplate.getForObject(
-                "http://localhost:8081/api/v1/fraud-check/{customerId}", FraudCheckResponse.class,
-                customer.getId()
-        );
+        FraudCheckResponse fraudCheckResponse = fraudClient.isFraudster(customer.getId());
 
         if (fraudCheckResponse.isFraudster()) {
             throw new IllegalStateException("fraudster");
         }
         // TODO: send notification
+        notificationClient.sendNotification(new NotificationRequest(
+                customer.getId(),
+                customer.getEmail(),
+                String.format("Hi %s welcome to Andromeda class...", customer.getFirstName())
+        ));
+
     }
 }
